@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use OpenApi\Attributes as OA;
+use App\Http\Requests\StoreReviewRequest;
 use App\Models\Rental;
 use App\Models\Review;
 use Exception;
@@ -13,15 +14,11 @@ use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function store(StoreReviewRequest $request): JsonResponse
     {
         $user = $request->user();
 
-        $data = $request->validate([
-            'rental_id' => 'required|integer|exists:rentals,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
-        ]);
+        $data = $request->validated();
 
         $rental = Rental::findOrFail($data['rental_id']);
         $rental->loadMissing('user');

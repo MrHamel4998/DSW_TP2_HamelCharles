@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use OpenApi\Attributes as OA;
+use App\Http\Requests\UpdatePasswordRequest;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\UserResource;
@@ -119,7 +120,7 @@ class UserController extends Controller
         }
     }
 
-    public function updatePassword(Request $request, string $id): JsonResponse
+    public function updatePassword(UpdatePasswordRequest $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
 
@@ -127,9 +128,7 @@ class UserController extends Controller
             abort(403, 'Forbidden. You can only update your own password.');
         }
 
-        $data = $request->validate([
-            'password' => ['required', 'confirmed', 'min:10', 'regex:/^(?=.*[A-Za-z])(?=.*\\d).+$/'], // https://regex101.com/
-        ]);
+        $data = $request->validated();
 
         $user->password = Hash::make($data['password']);
         $user->save();

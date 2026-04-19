@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use OpenApi\Attributes as OA;
+use App\Http\Requests\StoreEquipmentRequest;
+use App\Http\Requests\UpdateEquipmentRequest;
 use App\Http\Resources\EquipmentResource;
 use App\Models\Equipment;
 use Illuminate\Support\Facades\DB;
@@ -222,14 +224,9 @@ public function calculatePopularity($id)
         }
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreEquipmentRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'daily_price' => 'required|numeric|min:0',
-            'category_id' => 'required|integer|exists:categories,id',
-        ]);
+        $data = $request->validated();
 
         $equipment = Equipment::create($data);
 
@@ -239,14 +236,9 @@ public function calculatePopularity($id)
         ], 201);
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(UpdateEquipmentRequest $request, string $id): JsonResponse
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'daily_price' => 'required|numeric|min:0',
-            'category_id' => 'required|integer|exists:categories,id',
-        ]);
+        $data = $request->validated();
 
         $equipment = Equipment::findOrFail($id);
 
@@ -261,6 +253,14 @@ public function calculatePopularity($id)
     public function destroy(string $id)
     {
         $equipment = Equipment::findOrFail($id);
+
+        if ($equipment->rentals()->exists()) {
+            abort(409, 'Cannot delete equipment that is linked to rentals.');
+        }
+
+        // Détacher les sports associés avant de supprimer l'équipement
+        // https://laravel.com/docs/10.x/eloquent-relationships#attaching-detaching
+        $equipment->sports()->detach();
 
         $equipment->delete();
 
