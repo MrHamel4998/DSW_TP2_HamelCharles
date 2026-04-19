@@ -126,8 +126,13 @@ class UserController extends Controller
     public function updatePassword(UpdatePasswordRequest $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);
+        $authUser = $request->user();
 
-        if ($request->user()->id !== $user->id) {
+        if (!$authUser) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        if ($authUser->getAuthIdentifier() != $user->id) {
             abort(403, 'Forbidden. You can only update your own password.');
         }
 
