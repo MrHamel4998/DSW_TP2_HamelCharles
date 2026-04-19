@@ -8,6 +8,7 @@ use App\Models\Equipment;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EquipmentController extends Controller
@@ -188,17 +189,15 @@ public function calculatePopularity($id)
             $maxDate = $request->query('maxDate');
 
             if ($minDate != null && !strtotime($minDate)) {
-                return response()->json(['message' => 'Format minDate invalide'], 422);
+                abort(422, 'Format minDate invalide');
             }
 
             if ($maxDate != null && !strtotime($maxDate)) {
-                return response()->json(['message' => 'Format maxDate invalide'], 422);
+                abort(422, 'Format maxDate invalide');
             }
 
             if ($minDate && $maxDate && strtotime($minDate) > strtotime($maxDate)) {
-                return response()->json([
-                    'message' => 'minDate doit être inférieur à maxDate.'
-                ], 422);
+                abort(422, 'minDate doit être inférieur à maxDate.');
             }
 
             $query = DB::table('rentals')->where('equipment_id', $id);
@@ -221,6 +220,51 @@ public function calculatePopularity($id)
         } catch (Exception $ex) {
             abort(500, 'EquipmentController/Server Error');
         }
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'daily_price' => 'required|numeric|min:0',
+            'category_id' => 'required|integer|exists:categories,id',
+        ]);
+
+        $equipment = Equipment::create($data);
+
+        return response()->json([
+            'message' => 'Equipment created successfully.',
+            'data' => $equipment,
+        ], 201);
+    }
+
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'daily_price' => 'required|numeric|min:0',
+            'category_id' => 'required|integer|exists:categories,id',
+        ]);
+
+        $equipment = Equipment::findOrFail($id);
+
+        $equipment->update($data);
+
+        return response()->json([
+            'message' => 'Equipment updated successfully.',
+            'data' => $equipment,
+        ], 200);
+    }
+
+    public function destroy(string $id)
+    {
+        $equipment = Equipment::findOrFail($id);
+
+        $equipment->delete();
+
+        return response()->noContent(204);
     }
 
 }

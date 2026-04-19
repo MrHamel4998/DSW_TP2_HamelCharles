@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,17 +18,13 @@ class EnsureUserIsAdmin
         $user = $request->user();
 
         if (! $user) {
-            return new JsonResponse([
-                'message' => 'Unauthenticated.',
-            ], 401);
+            abort(401, 'Unauthenticated.');
         }
 
         $user->loadMissing('role');
 
         if (! $user->role || strtolower($user->role->name) !== 'admin') {
-            return new JsonResponse([
-                'message' => 'Forbidden. Admin role required.',
-            ], 403);
+            abort(403, 'Forbidden. Admin role required.');
         }
 
         return $next($request);

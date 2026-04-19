@@ -9,6 +9,9 @@ use App\Http\Resources\UserResource;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
@@ -114,5 +117,25 @@ class UserController extends Controller
         } catch (Exception $ex) {
             abort (500, 'UserController/Server error');        
         }
+    }
+
+    public function updatePassword(Request $request, string $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+
+        if ($request->user()->id !== $user->id) {
+            abort(403, 'Forbidden. You can only update your own password.');
+        }
+
+        $data = $request->validate([
+            'password' => ['required', 'confirmed', 'min:10', 'regex:/^(?=.*[A-Za-z])(?=.*\\d).+$/'], // https://regex101.com/
+        ]);
+
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Password updated successfully.',
+        ], 200);
     }
 }
