@@ -22,6 +22,7 @@ use OpenApi\Attributes as OA;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,6 +41,7 @@ class AuthController extends Controller
         content: new OA\JsonContent(
             required: ['first_name','last_name','email','login','password','password_confirmation'],
             properties: [
+                new OA\Property(property: 'roleId', type: 'integer', nullable: true, example: 1),
                 new OA\Property(property: 'first_name', type: 'string', example: 'John'),
                 new OA\Property(property: 'last_name', type: 'string', example: 'Doe'),
                 new OA\Property(property: 'email', type: 'string', example: 'john@email.com'),
@@ -60,10 +62,11 @@ class AuthController extends Controller
         $data['password'] = bcrypt($data['password']);
 
         $user = User::create($data);
+        $user->load('role');
 
         return response()->json([
             'message' => 'User created successfully.',
-            'data' => $user,
+            'data' => new UserResource($user),
         ], 201);
     }
 
@@ -101,11 +104,12 @@ class AuthController extends Controller
         $user = auth()->user();
         $user->tokens()->delete();
         $token = $user->createToken('auth_token');
+        $user->load('role');
 
         return response()->json([
             'message' => 'Login successful.',
             'data' => [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'token' => $token->plainTextToken,
             ],
         ], 200);
@@ -124,8 +128,10 @@ class AuthController extends Controller
 )]
     public function me(Request $request): JsonResponse
     {
+        $user = $request->user()->load('role');
+
         return response()->json([
-            'data' => $request->user(),
+            'data' => new UserResource($user),
         ], 200);
     }
 
@@ -152,11 +158,12 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
+        $user->load('role');
 
         return response()->json([
             'message' => 'Token refreshed successfully.',
             'data' => [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'token' => $token,
             ],
         ], 200);

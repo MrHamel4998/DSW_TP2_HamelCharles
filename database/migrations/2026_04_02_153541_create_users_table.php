@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('roleId')->nullable();
+            $table->foreign('roleId')->references('id')->on('roles')->nullOnDelete();
             $table->string('first_name');
             $table->string('last_name');
             $table->string('phone', 13)->nullable();
