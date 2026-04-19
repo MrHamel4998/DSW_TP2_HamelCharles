@@ -189,17 +189,15 @@ public function calculatePopularity($id)
             $maxDate = $request->query('maxDate');
 
             if ($minDate != null && !strtotime($minDate)) {
-                return response()->json(['message' => 'Format minDate invalide'], 422);
+                abort(422, 'Format minDate invalide');
             }
 
             if ($maxDate != null && !strtotime($maxDate)) {
-                return response()->json(['message' => 'Format maxDate invalide'], 422);
+                abort(422, 'Format maxDate invalide');
             }
 
             if ($minDate && $maxDate && strtotime($minDate) > strtotime($maxDate)) {
-                return response()->json([
-                    'message' => 'minDate doit être inférieur à maxDate.'
-                ], 422);
+                abort(422, 'minDate doit être inférieur à maxDate.');
             }
 
             $query = DB::table('rentals')->where('equipment_id', $id);
@@ -241,7 +239,7 @@ public function calculatePopularity($id)
         ], 201);
     }
 
-    public function update(Request $request, Equipment $equipment): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([
             'name' => 'required|string|max:100',
@@ -249,6 +247,8 @@ public function calculatePopularity($id)
             'daily_price' => 'required|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
         ]);
+
+        $equipment = Equipment::findOrFail($id);
 
         $equipment->update($data);
 
@@ -258,13 +258,13 @@ public function calculatePopularity($id)
         ], 200);
     }
 
-    public function destroy(Equipment $equipment): JsonResponse
+    public function destroy(string $id)
     {
+        $equipment = Equipment::findOrFail($id);
+
         $equipment->delete();
 
-        return response()->json([
-            'message' => 'Equipment deleted successfully.',
-        ], 200);
+        return response()->noContent(204);
     }
 
 }

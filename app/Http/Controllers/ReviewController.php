@@ -24,21 +24,17 @@ class ReviewController extends Controller
         ]);
 
         $rental = Rental::findOrFail($data['rental_id']);
+        $rental->loadMissing('user');
 
-        if ((int) $rental->user_id !== (int) $user->id) {
-            return response()->json([
-                'message' => 'Forbidden. You can only review your own rentals.',
-            ], 403);
+        if (! $user || ! $user->is($rental->user)) {
+            abort(403, 'Forbidden. You can only review your own rentals.');
         }
 
         $alreadyExists = Review::where('rental_id', $data['rental_id'])
-            ->where('user_id', $user->id)
-            ->exists();
+            ->where('user_id', $user->id)->exists();
 
         if ($alreadyExists) {
-            return response()->json([
-                'message' => 'A review already exists for this rental and user.',
-            ], 422);
+            abort(422, 'A review already exists for this rental and user.');
         }
 
         $review = Review::create([

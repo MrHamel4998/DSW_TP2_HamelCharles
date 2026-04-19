@@ -119,16 +119,16 @@ class UserController extends Controller
         }
     }
 
-    public function updatePassword(Request $request, User $user): JsonResponse
+    public function updatePassword(Request $request, string $id): JsonResponse
     {
-        if ((int) $request->user()->id !== (int) $user->id) {
-            return response()->json([
-                'message' => 'Forbidden. You can only update your own password.',
-            ], 403);
+        $user = User::findOrFail($id);
+
+        if ($request->user()->id !== $user->id) {
+            abort(403, 'Forbidden. You can only update your own password.');
         }
 
         $data = $request->validate([
-            'password' => ['required', 'confirmed', 'min:10', 'regex:/^(?=.*[A-Za-z])(?=.*\\d).+$/'],
+            'password' => ['required', 'confirmed', 'min:10', 'regex:/^(?=.*[A-Za-z])(?=.*\\d).+$/'], // https://regex101.com/
         ]);
 
         $user->password = Hash::make($data['password']);
