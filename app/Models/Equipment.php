@@ -9,6 +9,8 @@ use App\Models\Rental;
 
 class Equipment extends Model
 {
+    protected $table = 'equipment';
+
     protected $fillable = [
         'name',
         'description',
