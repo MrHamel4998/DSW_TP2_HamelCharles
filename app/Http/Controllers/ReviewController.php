@@ -4,37 +4,44 @@ namespace App\Http\Controllers;
 
 use OpenApi\Attributes as OA;
 use App\Http\Requests\StoreReviewRequest;
-use App\Models\Rental;
-use App\Models\Review;
+use App\Repositories\RentalInterface;
+use App\Repositories\ReviewInterface;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
+    public function __construct(
+        private RentalInterface $rentalRepository,
+        private ReviewInterface $reviewRepository
+    ) {
+    }
+
     public function store(StoreReviewRequest $request): JsonResponse
     {
         $user = $request->user();
 
         $data = $request->validated();
 
-        $rental = Rental::findOrFail($data['rental_id']);
+        $rental = $this->rentalRepository->findByIdOrFail((int) $data['rental_id']);
         $rental->loadMissing('user');
 
         if (! $user || ! $user->is($rental->user)) {
             abort(403, 'Forbidden. You can only review your own rentals.');
         }
 
-        $alreadyExists = Review::where('rental_id', $data['rental_id'])
-            ->where('user_id', $user->id)->exists();
+        $alreadyExists = $this->reviewRepository->existsForRentalAndUser(
+            $data['rental_id'],
+            $user->id
+        );
 
         if ($alreadyExists) {
             abort(422, 'A review already exists for this rental and user.');
         }
 
-        $review = Review::create([
+        $review = $this->reviewRepository->create([
             'rental_id' => $data['rental_id'],
             'user_id' => $user->id,
             'rating' => $data['rating'],
@@ -72,8 +79,7 @@ class ReviewController extends Controller
     )]
     public function destroy(string $id) {
         try {
-            $review = Review::findOrFail($id);
-            $review->delete();
+            $this->reviewRepository->delete($id);
             return response()->noContent(204);
         } catch ( ModelNotFoundException $ex) {
             abort (404, 'ReviewController/Id not Found');

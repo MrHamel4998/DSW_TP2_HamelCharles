@@ -4,19 +4,23 @@ namespace App\Http\Controllers;
 
 use OpenApi\Attributes as OA;
 use App\Http\Requests\UpdatePasswordRequest;
-use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\UserResource;
+use App\Repositories\UserInterface;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class UserController extends Controller
 {
+    public function __construct(private UserInterface $userRepository)
+    {
+    }
+
     #[OA\Post(
         path: '/api/users',
         summary: 'Créer un utilisateur',
@@ -49,7 +53,7 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         try {
-            $user = User::create($request->validated());
+            $user = $this->userRepository->create($request->validated());
             return (new UserResource($user))->response()->setStatusCode(201);
         } catch (QueryException $ex) {
             abort(422, 'UserController/Cannot be created');
@@ -101,14 +105,13 @@ class UserController extends Controller
             new OA\Response(response: 404, description: 'Utilisateur non trouvé')
         ]
     )]
-    public function update(StoreUserRequest $request, string $id)
+    public function update(StoreUserRequest $request, int $id)
     {
         try {
             $validated = $request->validated();
-            $user = User::findOrFail($id);
-            $user->update($validated);
+            $user = $this->userRepository->update($id, $validated);
 
-            return (new UserResource($user->fresh()))->response()->setStatusCode(200);
+            return (new UserResource($user))->response()->setStatusCode(200);
         } catch (ModelNotFoundException $ex) {
             abort(404, 'UserController/ID Not Found');
         } catch (ValidationException $ex) {
@@ -120,7 +123,7 @@ class UserController extends Controller
         }
     }
 
-    public function updatePassword(UpdatePasswordRequest $request, string $id): JsonResponse
+    public function updatePassword(UpdatePasswordRequest $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);
 
@@ -130,8 +133,7 @@ class UserController extends Controller
 
         $data = $request->validated();
 
-        $user->password = Hash::make($data['password']);
-        $user->save();
+        $this->userRepository->updatePassword($id, Hash::make($data['password']));
 
         return response()->json([
             'message' => 'Password updated successfully.',

@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Rental;
+use App\Repositories\RentalInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class RentalController extends Controller
 {
+	public function __construct(private RentalInterface $rentalRepository)
+	{
+	}
+
 	public function activeRentals(Request $request): JsonResponse
 	{
         // Aide de ChatGPT pour la requête.
@@ -17,12 +21,7 @@ class RentalController extends Controller
         // est supérieure ou égale à aujourd'hui. Trie les résultats par date de début croissante."
         $today = Carbon::today()->toDateString();
 
-		$rentals = Rental::query()
-			->where('user_id', $request->user()->id)
-			->where('start_date', '<=', $today)
-			->where('end_date', '>=', $today)
-			->orderBy('start_date', 'asc')
-			->get();
+		$rentals = $this->rentalRepository->getActiveByUser((int) $request->user()->id, $today);
 
 		return response()->json([
 			'data' => $rentals,

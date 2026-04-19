@@ -23,13 +23,16 @@ use OpenApi\Attributes as OA;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
-use App\Models\User;
+use App\Repositories\UserInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function __construct(private UserInterface $userRepository)
+    {
+    }
     
 #[OA\Post(
     path: '/api/signup',
@@ -61,7 +64,7 @@ class AuthController extends Controller
         $data = $request->validated();
         $data['password'] = bcrypt($data['password']);
 
-        $user = User::create($data);
+        $user = $this->userRepository->create($data);
         $user->load('role');
 
         return response()->json([
@@ -102,9 +105,9 @@ class AuthController extends Controller
         }
 
         $user = auth()->user();
+        $user->load('role');
         $user->tokens()->delete();
         $token = $user->createToken('auth_token');
-        $user->load('role');
 
         return response()->json([
             'message' => 'Login successful.',
@@ -128,7 +131,8 @@ class AuthController extends Controller
 )]
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user()->load('role');
+        $user = $request->user();
+        $user->load('role');
 
         return response()->json([
             'data' => new UserResource($user),
@@ -149,6 +153,7 @@ class AuthController extends Controller
     public function refresh(Request $request): JsonResponse
     {
         $user = $request->user();
+        $user->load('role');
         $currentToken = $user->currentAccessToken();
 
         if ($currentToken) {
@@ -158,7 +163,6 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        $user->load('role');
 
         return response()->json([
             'message' => 'Token refreshed successfully.',

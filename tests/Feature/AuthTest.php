@@ -119,9 +119,9 @@ class AuthTest extends TestCase
         $response->assertStatus(204);
     }
 
-    public function test_signup_six_times(): void
+    public function test_signup_sixty_one_times(): void
     {
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 61; $i++) {
             $response = $this->postJson('api/signup', [
                 'first_name' => 'John' . $i,
                 'last_name' => 'Doe' . $i,
@@ -135,9 +135,9 @@ class AuthTest extends TestCase
         $response->assertStatus(429);
     }
 
-    public function test_signup_five_times(): void
+    public function test_signup_sixty_times(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 60; $i++) {
             $response = $this->postJson('api/signup', [
                 'first_name' => 'John' . $i,
                 'last_name' => 'Doe' . $i,
@@ -151,13 +151,13 @@ class AuthTest extends TestCase
         $response->assertStatus(201);
     }
 
-    public function test_signin_six_times(): void
+    public function test_signin_sixty_one_times(): void
     {
         $user = User::factory()->create([
             'password' => bcrypt('Password123!'),
         ]);
 
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 61; $i++) {
             $response = $this
                 ->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
                 ->postJson('api/signin', [
@@ -169,13 +169,13 @@ class AuthTest extends TestCase
         $response->assertStatus(429);
     }
 
-    public function test_signin_five_times(): void
+    public function test_signin_sixty_times(): void
     {
         $user = User::factory()->create([
             'password' => bcrypt('Password123!'),
         ]);
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 60; $i++) {
             $response = $this
                 ->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
                 ->postJson('api/signin', [
@@ -187,22 +187,22 @@ class AuthTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_signout_six_times(): void
+    public function test_signout_sixty_one_times(): void
     {
         Sanctum::actingAs(User::factory()->create());
 
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 61; $i++) {
             $response = $this->postJson('/api/signout');
         }
 
         $response->assertStatus(429);
     }
 
-    public function test_signout_five_times(): void
+    public function test_signout_sixty_times(): void
     {
         Sanctum::actingAs(User::factory()->create());
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 60; $i++) {
             $response = $this->postJson('/api/signout');
         }
 

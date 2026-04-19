@@ -6,8 +6,7 @@ use OpenApi\Attributes as OA;
 use App\Http\Requests\StoreEquipmentRequest;
 use App\Http\Requests\UpdateEquipmentRequest;
 use App\Http\Resources\EquipmentResource;
-use App\Models\Equipment;
-use Illuminate\Support\Facades\DB;
+use App\Repositories\EquipmentInterface;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +14,10 @@ use Illuminate\Http\Request;
 
 class EquipmentController extends Controller
 {
+    public function __construct(private EquipmentInterface $equipmentRepository)
+    {
+    }
+
     #[OA\Get(
         path: '/api/equipments',
         summary: 'Récupérer la liste des équipements',
@@ -42,7 +45,7 @@ class EquipmentController extends Controller
     {
         try {
             return EquipmentResource::collection(
-            Equipment::all()
+            $this->equipmentRepository->getAll()
             )->response()->setStatusCode(200);
         } catch (Exception $ex) {
             abort (500, 'EquipmentController/Server Error');
@@ -79,10 +82,10 @@ class EquipmentController extends Controller
             new OA\Response(response: 404, description: 'Équipement non trouvé')
         ]
     )]
-    public function show(string $id){
+    public function show(int $id){
         try {
             return ( new EquipmentResource(
-                Equipment::findOrFail($id))
+                $this->equipmentRepository->findByIdOrFail($id))
                 )->response()->setStatusCode(200);
         } catch (ModelNotFoundException $ex) {
             abort(404, 'EquipmentController/ID Not Found');
@@ -118,17 +121,10 @@ class EquipmentController extends Controller
             new OA\Response(response: 404, description: 'Popularité non trouvé')
         ]
     )]
-public function calculatePopularity($id)
+public function calculatePopularity(int $id)
 {
     try {
-        $rentalCount = DB::table('rentals')->where('equipment_id', $id)->count();
-        $averageReview = DB::table('reviews')->where('equipment_id', $id)->avg('rating');
-
-        if ($averageReview === null) {
-            $averageReview = 0;
-        }
-
-        $popularity = ($rentalCount * 0.6) + ($averageReview * 0.4);
+        $popularity = $this->equipmentRepository->calculatePopularity($id);
 
         return response()->json([
             'popularity' => $popularity
@@ -184,7 +180,7 @@ public function calculatePopularity($id)
 // Prompt : Comment on fait pour savoir si une date à un format valide en php
 // ChatGPT : Pour transformer une chaîne de caractères représentant une date en valeur exploitable en PHP, on utilise strtotime(). 
 //           strtotime() sert à convertir une date texte en timestamp, si la conversion échoue, il retourne false..
-    public function calculateAverageRentalPrice(Request $request, $id) {
+    public function calculateAverageRentalPrice(Request $request, int $id) {
         try 
         {
             $minDate = $request->query('minDate');
@@ -202,17 +198,11 @@ public function calculatePopularity($id)
                 abort(422, 'minDate doit être inférieur à maxDate.');
             }
 
-            $query = DB::table('rentals')->where('equipment_id', $id);
-
-            if ($minDate != null) {
-                $query->whereDate('start_date', '>=', $minDate);
-            }
-
-            if ($maxDate != null) {
-                $query->whereDate('end_date', '<=', $maxDate);
-            }
-
-            $average = $query->avg('total_price');
+            $average = $this->equipmentRepository->calculateAverageRentalPrice(
+                $id,
+                $minDate,
+                $maxDate
+            );
             return response()->json([
                 'average_total_price' => $average ?? 0
             ], 200);
@@ -228,7 +218,7 @@ public function calculatePopularity($id)
     {
         $data = $request->validated();
 
-        $equipment = Equipment::create($data);
+        $equipment = $this->equipmentRepository->create($data);
 
         return response()->json([
             'message' => 'Equipment created successfully.',
@@ -236,13 +226,11 @@ public function calculatePopularity($id)
         ], 201);
     }
 
-    public function update(UpdateEquipmentRequest $request, string $id): JsonResponse
+    public function update(UpdateEquipmentRequest $request, int $id): JsonResponse
     {
         $data = $request->validated();
 
-        $equipment = Equipment::findOrFail($id);
-
-        $equipment->update($data);
+        $equipment = $this->equipmentRepository->update($id, $data);
 
         return response()->json([
             'message' => 'Equipment updated successfully.',
@@ -250,19 +238,16 @@ public function calculatePopularity($id)
         ], 200);
     }
 
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        $equipment = Equipment::findOrFail($id);
+        $equipment = $this->equipmentRepository->findByIdOrFail($id);
 
-        if ($equipment->rentals()->exists()) {
+        if ($this->equipmentRepository->hasRentals($id)) {
             abort(409, 'Cannot delete equipment that is linked to rentals.');
         }
 
-        // Détacher les sports associés avant de supprimer l'équipement
-        // https://laravel.com/docs/10.x/eloquent-relationships#attaching-detaching
-        $equipment->sports()->detach();
-
-        $equipment->delete();
+        $this->equipmentRepository->detachSports($id);
+        $this->equipmentRepository->delete($id);
 
         return response()->noContent(204);
     }
