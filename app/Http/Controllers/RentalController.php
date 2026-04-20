@@ -15,13 +15,15 @@ class RentalController extends Controller
 
 	public function activeRentals(Request $request): JsonResponse
 	{
+		$user = $request->user();
+
         // Aide de ChatGPT pour la requête.
         // Prompt : "Ecris une requête Eloquent pour récupérer les locations actives d'un utilisateur,
         // c'est à dire celles dont la date de début est inférieure ou égale à aujourd'hui et la date de fin
         // est supérieure ou égale à aujourd'hui. Trie les résultats par date de début croissante."
         $today = Carbon::today()->toDateString();
 
-		$rentals = $this->rentalRepository->getActiveByUser((int) $request->user()->id, $today);
+		$rentals = $this->rentalRepository->getActiveByUser($user->id, $today);
 
 		return response()->json([
 			'data' => $rentals,

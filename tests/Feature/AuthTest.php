@@ -17,11 +17,11 @@
  * - Déconnexion nécessite authentification
  * - Déconnexion réussie
  * - Inscription bloquée à la 6e tentative (throttling)
- * - Inscription autorisée jusqu’à 5 tentatives
- * - Connexion bloquée à la 6e tentative
- * - Connexion autorisée jusqu’à 5 tentatives (erreur identifiants attendue)
- * - Déconnexion bloquée à la 6e tentative
- * - Déconnexion autorisée jusqu’à 5 tentatives
+ * - Inscription autorisée jusqu’à 60 tentatives
+ * - Connexion bloquée à la 61e tentative
+ * - Connexion autorisée jusqu’à 60 tentatives (erreur identifiants attendue)
+ * - Déconnexion bloquée à la 61e tentative
+ * - Déconnexion autorisée jusqu’à 60 tentatives
  * - Validation inscription : prénom, nom, email, login, mot de passe manquants
  * - Validation inscription : email invalide
  * - Validation inscription : mot de passe trop court / sans chiffre / sans lettre

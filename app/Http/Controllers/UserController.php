@@ -122,7 +122,6 @@ class UserController extends Controller
             abort (500, 'UserController/Server error');        
         }
     }
-
     public function updatePassword(UpdatePasswordRequest $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);
