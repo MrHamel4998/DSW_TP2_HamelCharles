@@ -1,4 +1,20 @@
 <?php
+/**
+ * Documentation Swagger (OpenAPI) générée avec l'assistance de GitHub Copilot (GPT-5.3-Codex).
+ *
+ * Motif :
+ * - Accélérer la production des annotations
+ * - Assurer une structure conforme aux standards OpenAPI
+ * - Réduire les erreurs de syntaxe répétitives
+ *
+ * Limites :
+ * - Les annotations ont été validées manuellement (routes, schémas, sécurité)
+ * - Le throttling documenté a été ajouté par l'étudiant
+ *
+ * Responsabilité :
+ * - Le contenu final a été relu, ajusté et intégré dans le projet
+ * - Les tests via Swagger UI ont été effectués pour valider le comportement
+ */
 
 namespace App\Http\Controllers;
 
@@ -122,6 +138,33 @@ class UserController extends Controller
             abort (500, 'UserController/Server error');        
         }
     }
+
+    #[OA\Patch(
+        path: '/api/users/{id}/password',
+        summary: 'Mettre à jour le mot de passe d\'un utilisateur',
+        description: 'Un utilisateur ne peut modifier que son propre mot de passe. Authentification requise. Throttling: 60 requêtes/minute.',
+        tags: ['User'],
+        security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true)
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['password', 'password_confirmation'],
+                properties: [
+                    new OA\Property(property: 'password', type: 'string', example: 'NewPassword456!'),
+                    new OA\Property(property: 'password_confirmation', type: 'string', example: 'NewPassword456!')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Mot de passe mis à jour'),
+            new OA\Response(response: 401, description: 'Non authentifié'),
+            new OA\Response(response: 403, description: 'Interdit: modification d\'un autre utilisateur'),
+            new OA\Response(response: 422, description: 'Validation échouée')
+        ]
+    )]
     public function updatePassword(UpdatePasswordRequest $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);

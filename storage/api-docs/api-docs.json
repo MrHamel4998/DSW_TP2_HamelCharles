@@ -27,6 +27,11 @@
                                     "password_confirmation"
                                 ],
                                 "properties": {
+                                    "roleId": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
                                     "first_name": {
                                         "type": "string",
                                         "example": "John"
@@ -180,6 +185,667 @@
                     }
                 ]
             }
+        },
+        "/api/equipments": {
+            "get": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Récupérer la liste des équipements",
+                "description": "Retourner tous les équipements existants",
+                "operationId": "6ef4946ec56ce0f0c3e613f7c57d37f2",
+                "responses": {
+                    "200": {
+                        "description": "Liste des équipements récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "daily_price": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "categoryId": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/equipments/{id}": {
+            "get": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Récupérer un équipement par ID",
+                "description": "Retourner les détails d'un équipement",
+                "operationId": "f5219eb4f4143cf304576feea563c147",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Équipement trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "daily_price": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "categoryId": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/equipments/{id}/popularity": {
+            "get": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Récupérer la popularité d'un équipement par ID",
+                "description": "Retourner la popularité d'un équipement",
+                "operationId": "5d5c14d5aaa81bf814a18d9d603200ce",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Popularité trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "popularity": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Popularité non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/equipments/{id}/average-rental-price": {
+            "get": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Recevoir la moyenne du prix total de location d'un équipement",
+                "description": "minDate et maxDate pour filtrer les locations",
+                "operationId": "722041b82f3fe0d4c96ce79a786cd2b7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "minDate",
+                        "in": "query",
+                        "description": "AAAA-MM-JJ",
+                        "required": false
+                    },
+                    {
+                        "name": "maxDate",
+                        "in": "query",
+                        "description": "AAAA-MM-JJ",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Moyenne calculée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "average_total_price": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Format de date invalide ou minDate > maxDate"
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/equipment": {
+            "post": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Ajouter un équipement",
+                "description": "Route 1. Seulement si admin. Throttling: 60 requêtes/minute.",
+                "operationId": "28c5d8c51afa89bb5b58cafcb6ce6020",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "description",
+                                    "daily_price",
+                                    "category_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Surfboard"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Planche de surf"
+                                    },
+                                    "daily_price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 30
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Équipement créé"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Interdit: rôle admin requis"
+                    },
+                    "422": {
+                        "description": "Validation échouée"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/equipment/{id}": {
+            "put": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Mettre à jour un équipement (global)",
+                "description": "Route 2. Mise à jour complète. Seulement si admin. Throttling: 60 requêtes/minute.",
+                "operationId": "eeb16faf22a74b63460867278b61644e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "description",
+                                    "daily_price",
+                                    "category_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Surfboard Pro"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Planche de surf pro"
+                                    },
+                                    "daily_price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 45
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Équipement mis à jour"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Interdit: rôle admin requis"
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    },
+                    "422": {
+                        "description": "Validation échouée"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Supprimer un équipement",
+                "description": "Route 3. Seulement si admin. Throttling: 60 requêtes/minute.",
+                "operationId": "9337ff7b74f071a99d2d2ea81f4617e4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Équipement supprimé"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Interdit: rôle admin requis"
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    },
+                    "409": {
+                        "description": "Conflit: équipement lié à des locations"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/rentals/": {
+            "get": {
+                "tags": [
+                    "Rental"
+                ],
+                "summary": "Afficher les locations actives de l'utilisateur connecté",
+                "description": "Route 5. Accessible uniquement si connecté. Throttling: 60 requêtes/minute.",
+                "operationId": "3f3f3443ee3dc8b6e7058cfc3081e756",
+                "responses": {
+                    "200": {
+                        "description": "Liste des locations actives"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reviews": {
+            "post": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Créer une critique pour une location",
+                "description": "Route 4. Une seule critique par location pour un utilisateur. Authentification requise. Throttling: 60 requêtes/minute.",
+                "operationId": "154c71f5f72b459d998f5ea451bd4c96",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "rental_id",
+                                    "rating"
+                                ],
+                                "properties": {
+                                    "rental_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "rating": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Excellent équipement.",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Critique créée"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Interdit: location d'un autre utilisateur"
+                    },
+                    "422": {
+                        "description": "Validation échouée ou critique déjà existante"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reviews/{id}": {
+            "delete": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Supprimer une critique par ID",
+                "description": "Supprimer une critique",
+                "operationId": "89986343b5dbd2b909c2764aeb7e4096",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Critique supprimé"
+                    },
+                    "404": {
+                        "description": "Critique non trouvée"
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Créer un utilisateur",
+                "description": "Un nouvel utilisateur en paramètre",
+                "operationId": "592819a0265360b2014512d6dbfaf0e7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "phone"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "Jean"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Dupont"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jean@email.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "819-789-1234"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Utilisateur créé"
+                    },
+                    "422": {
+                        "description": "Validation échouée"
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Mettre à jour d'un utilisateur (mise à jour complète et non partielle)",
+                "description": "Utilisateur et id en paramètres",
+                "operationId": "b9091397c8b25f12c6adb74be6ce3a5a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "phone"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Smith"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "John@email.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "819-789-4567"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Utilisateur modifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Utilisateur non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/password": {
+            "patch": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Mettre à jour le mot de passe d'un utilisateur",
+                "description": "Route 6. Un utilisateur ne peut modifier que son propre mot de passe. Authentification requise. Throttling: 60 requêtes/minute.",
+                "operationId": "4f86d763349c89bca0a239bd4334c7b0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "example": "NewPassword456!"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "NewPassword456!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe mis à jour"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Interdit: modification d'un autre utilisateur"
+                    },
+                    "422": {
+                        "description": "Validation échouée"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -194,6 +860,22 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Equipment",
+            "description": "Equipment"
+        },
+        {
+            "name": "Rental",
+            "description": "Rental"
+        },
+        {
+            "name": "Review",
+            "description": "Review"
+        },
+        {
+            "name": "User",
+            "description": "User"
         }
     ]
 }

@@ -8,7 +8,7 @@
  * - Réduire les erreurs de syntaxe répétitives
  *
  * Limites :
- * - Les annotations doivent ont étés validées manuellement (routes, schémas, sécurité)
+ * - Les annotations ont été validées manuellement (routes, schémas, sécurité)
  * - Le throttling documenté a été ajouté par l'étudiant
  *
  * Responsabilité :

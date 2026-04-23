@@ -1,4 +1,20 @@
 <?php
+/**
+ * Documentation Swagger (OpenAPI) générée avec l'assistance de GitHub Copilot (GPT-5.3-Codex).
+ *
+ * Motif :
+ * - Accélérer la production des annotations
+ * - Assurer une structure conforme aux standards OpenAPI
+ * - Réduire les erreurs de syntaxe répétitives
+ *
+ * Limites :
+ * - Les annotations ont été validées manuellement (routes, schémas, sécurité)
+ * - Le throttling documenté a été ajouté par l'étudiant
+ *
+ * Responsabilité :
+ * - Le contenu final a été relu, ajusté et intégré dans le projet
+ * - Les tests via Swagger UI ont été effectués pour valider le comportement
+ */
 
 namespace App\Http\Controllers;
 
@@ -19,6 +35,30 @@ class ReviewController extends Controller
     ) {
     }
 
+    #[OA\Post(
+        path: '/api/reviews',
+        summary: 'Créer une critique pour une location',
+        description: 'Une seule critique par location pour un utilisateur. Authentification requise. Throttling: 60 requêtes/minute.',
+        tags: ['Review'],
+        security: [['bearerAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['rental_id', 'rating'],
+                properties: [
+                    new OA\Property(property: 'rental_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'rating', type: 'integer', example: 5),
+                    new OA\Property(property: 'comment', type: 'string', nullable: true, example: 'Excellent équipement.')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Critique créée'),
+            new OA\Response(response: 401, description: 'Non authentifié'),
+            new OA\Response(response: 403, description: 'Interdit: location d\'un autre utilisateur'),
+            new OA\Response(response: 422, description: 'Validation échouée ou critique déjà existante')
+        ]
+    )]
     public function store(StoreReviewRequest $request): JsonResponse
     {
         $user = $request->user();
