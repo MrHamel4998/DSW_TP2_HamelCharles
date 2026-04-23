@@ -165,4 +165,70 @@ class EquipmentControllerTest extends TestCase
         $response->assertStatus(409);
         $response->assertJsonFragment(['message' => 'Cannot delete equipment that is linked to rentals.']);
     }
+
+    public function test_create_equipment_is_throttled_after_sixty_requests(): void
+    {
+        $this->seed();
+
+        $admin = User::factory()->create([
+            'roleId' => 2,
+            'password' => bcrypt('Password123!'),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        for ($i = 0; $i < 61; $i++) {
+            $response = $this->postJson('/api/equipment', [
+                'name' => 'Surfboard ' . $i,
+                'description' => 'Planche de surf',
+                'daily_price' => 30.00,
+                'category_id' => 1,
+            ]);
+        }
+
+        $response->assertStatus(429);
+    }
+
+    public function test_update_equipment_is_throttled_after_sixty_requests(): void
+    {
+        $this->seed();
+
+        $admin = User::factory()->create([
+            'roleId' => 2,
+            'password' => bcrypt('Password123!'),
+        ]);
+        $equipment = Equipment::query()->firstOrFail();
+
+        Sanctum::actingAs($admin);
+
+        for ($i = 0; $i < 61; $i++) {
+            $response = $this->putJson('/api/equipment/' . $equipment->id, [
+                'name' => 'Surfboard Pro',
+                'description' => 'Planche de surf pro',
+                'daily_price' => 45.00,
+                'category_id' => 1,
+            ]);
+        }
+
+        $response->assertStatus(429);
+    }
+
+    public function test_delete_equipment_is_throttled_after_sixty_requests(): void
+    {
+        $this->seed();
+
+        $admin = User::factory()->create([
+            'roleId' => 2,
+            'password' => bcrypt('Password123!'),
+        ]);
+        $equipmentId = Rental::query()->firstOrFail()->equipment_id;
+
+        Sanctum::actingAs($admin);
+
+        for ($i = 0; $i < 61; $i++) {
+            $response = $this->deleteJson('/api/equipment/' . $equipmentId);
+        }
+
+        $response->assertStatus(429);
+    }
 }

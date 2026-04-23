@@ -95,4 +95,31 @@ class ReviewControllerTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    public function test_create_review_is_throttled_after_sixty_requests(): void
+    {
+        $this->seed();
+
+        $user = User::factory()->create([
+            'roleId' => 1,
+            'password' => bcrypt('Password123!'),
+        ]);
+        $equipment = Equipment::query()->firstOrFail();
+        $rental = Rental::factory()->create([
+            'user_id' => $user->id,
+            'equipment_id' => $equipment->id,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        for ($i = 0; $i < 61; $i++) {
+            $response = $this->postJson('/api/reviews', [
+                'rental_id' => $rental->id,
+                'rating' => 5,
+                'comment' => 'Excellent équipement.',
+            ]);
+        }
+
+        $response->assertStatus(429);
+    }
 }

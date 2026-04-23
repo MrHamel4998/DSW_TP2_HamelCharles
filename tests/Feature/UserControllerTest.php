@@ -22,7 +22,7 @@ class UserControllerTest extends TestCase
         ]);
         Sanctum::actingAs($user);
 
-        $response = $this->putJson('/api/users/' . $user->id . '/password', [
+        $response = $this->patchJson('/api/users/' . $user->id . '/password', [
             'password' => 'NewPassword456!',
             'password_confirmation' => 'NewPassword456!',
         ]);
@@ -46,7 +46,7 @@ class UserControllerTest extends TestCase
         ]);
         Sanctum::actingAs($user);
 
-        $response = $this->putJson('/api/users/' . $otherUser->id . '/password', [
+        $response = $this->patchJson('/api/users/' . $otherUser->id . '/password', [
             'password' => 'NewPassword456!',
             'password_confirmation' => 'NewPassword456!',
         ]);
@@ -59,7 +59,7 @@ class UserControllerTest extends TestCase
     {
         $this->seed();
 
-        $response = $this->putJson('/api/users/1/password', [
+        $response = $this->patchJson('/api/users/1/password', [
             'password' => 'NewPassword456!',
             'password_confirmation' => 'NewPassword456!',
         ]);
@@ -77,12 +77,34 @@ class UserControllerTest extends TestCase
         ]);
         Sanctum::actingAs($user);
 
-        $response = $this->putJson('/api/users/' . $user->id . '/password', [
+        $response = $this->patchJson('/api/users/' . $user->id . '/password', [
             'password' => 'short',
             'password_confirmation' => 'short',
         ]);
 
         $response->assertStatus(422);
         $response->assertJsonStructure(['message', 'errors']);
+    }
+
+    public function test_update_password_is_throttled_after_sixty_requests(): void
+    {
+        $this->seed();
+
+        $user = User::factory()->create([
+            'roleId' => 1,
+            'password' => bcrypt('Password123!'),
+        ]);
+        Sanctum::actingAs($user);
+
+        for ($i = 0; $i < 61; $i++) {
+            $password = 'NewPassword' . $i . '456!';
+
+            $response = $this->patchJson('/api/users/' . $user->id . '/password', [
+                'password' => $password,
+                'password_confirmation' => $password,
+            ]);
+        }
+
+        $response->assertStatus(429);
     }
 }
