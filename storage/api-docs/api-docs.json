@@ -646,59 +646,6 @@
                 }
             }
         },
-        "/api/users": {
-            "post": {
-                "tags": [
-                    "User"
-                ],
-                "summary": "Créer un utilisateur",
-                "description": "Un nouvel utilisateur en paramètre",
-                "operationId": "592819a0265360b2014512d6dbfaf0e7",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "first_name",
-                                    "last_name",
-                                    "email",
-                                    "phone"
-                                ],
-                                "properties": {
-                                    "first_name": {
-                                        "type": "string",
-                                        "example": "Jean"
-                                    },
-                                    "last_name": {
-                                        "type": "string",
-                                        "example": "Dupont"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "jean@email.com"
-                                    },
-                                    "phone": {
-                                        "type": "string",
-                                        "example": "819-789-1234"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Utilisateur créé"
-                    },
-                    "422": {
-                        "description": "Validation échouée"
-                    }
-                }
-            }
-        },
         "/api/users/{id}": {
             "put": {
                 "tags": [

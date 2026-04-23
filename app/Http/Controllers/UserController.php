@@ -36,47 +36,6 @@ class UserController extends Controller
     {
     }
 
-    #[OA\Post(
-        path: '/api/users',
-        summary: 'Créer un utilisateur',
-        description: 'Un nouvel utilisateur en paramètre',
-        tags: ['User'],
-        requestBody: new OA\RequestBody(
-                required: true,
-                content: new OA\JsonContent(
-                    type: 'object',
-                    required: ['first_name', 'last_name', 'email', 'phone'],
-                    properties: [
-                        new OA\Property(property: 'first_name', type: 'string', example: 'Jean'),
-                        new OA\Property(property: 'last_name', type: 'string', example: 'Dupont'),
-                        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jean@email.com'),
-                        new OA\Property(property: 'phone', type: 'string', example: '819-789-1234')
-                    ]
-                )
-            ),
-        responses: [
-            new OA\Response(
-                response: 201,
-                description: 'Utilisateur créé'
-            ),
-            new OA\Response(
-                response: 422,
-                description: 'Validation échouée'
-            )
-        ]
-    )]
-    public function store(StoreUserRequest $request)
-    {
-        try {
-            $user = $this->userRepository->create($request->validated());
-            return (new UserResource($user))->response()->setStatusCode(201);
-        } catch (QueryException $ex) {
-            abort(422, 'UserController/Cannot be created');
-        } catch (Exception $ex) {
-            abort (500, 'UserController/Server error');
-        }
-    }
-
     #[OA\Put(
         path: '/api/users/{id}',
         summary: 'Mettre à jour d\'un utilisateur (mise à jour complète et non partielle)',
