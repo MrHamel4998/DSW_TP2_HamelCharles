@@ -13,6 +13,16 @@ Route::middleware('throttle:5,1')->group(function () {
     Route::post('/signin', [AuthController::class, 'login']);
 });
 
+// Routes du TP01
+Route::get('/equipment', [EquipmentController::class, 'index']);
+Route::get('/equipment/{id}', [EquipmentController::class, 'show']);
+Route::get('/equipment/{id}/popularity', [EquipmentController::class, 'calculatePopularity']);
+Route::get('/equipment/{id}/average-rental-price', [EquipmentController::class, 'calculateAverageRentalPrice']);
+Route::post('/users', [UserController::class, 'store']);
+Route::put('/users/{id}', [UserController::class, 'update']);
+Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('throttle:5,1')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
@@ -23,7 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('throttle:60,1')->group(function () {
         Route::get('/rentals/', [RentalController::class, 'activeRentals']);
         Route::post('/reviews', [ReviewController::class, 'store']);
-        Route::patch('/users/{id}/password', [UserController::class, 'updatePassword']);
+        Route::patch('/user/password', [UserController::class, 'updatePassword']);
 
         Route::middleware('admin')->group(function () {
             Route::post('/equipment', [EquipmentController::class, 'store']);

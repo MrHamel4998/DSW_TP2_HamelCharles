@@ -186,14 +186,14 @@
                 ]
             }
         },
-        "/api/equipments": {
+        "/api/equipment": {
             "get": {
                 "tags": [
                     "Equipment"
                 ],
                 "summary": "Récupérer la liste des équipements",
                 "description": "Retourner tous les équipements existants",
-                "operationId": "6ef4946ec56ce0f0c3e613f7c57d37f2",
+                "operationId": "771e58f407e40ca413f92c85f944e760",
                 "responses": {
                     "200": {
                         "description": "Liste des équipements récupérée avec succès",
@@ -225,157 +225,13 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/equipments/{id}": {
-            "get": {
-                "tags": [
-                    "Equipment"
-                ],
-                "summary": "Récupérer un équipement par ID",
-                "description": "Retourner les détails d'un équipement",
-                "operationId": "f5219eb4f4143cf304576feea563c147",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Équipement trouvé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "daily_price": {
-                                            "type": "number",
-                                            "format": "float"
-                                        },
-                                        "categoryId": {
-                                            "type": "integer",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Équipement non trouvé"
-                    }
-                }
-            }
-        },
-        "/api/equipments/{id}/popularity": {
-            "get": {
-                "tags": [
-                    "Equipment"
-                ],
-                "summary": "Récupérer la popularité d'un équipement par ID",
-                "description": "Retourner la popularité d'un équipement",
-                "operationId": "5d5c14d5aaa81bf814a18d9d603200ce",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Popularité trouvé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "popularity": {
-                                            "type": "number",
-                                            "format": "float"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Popularité non trouvé"
-                    }
-                }
-            }
-        },
-        "/api/equipments/{id}/average-rental-price": {
-            "get": {
-                "tags": [
-                    "Equipment"
-                ],
-                "summary": "Recevoir la moyenne du prix total de location d'un équipement",
-                "description": "minDate et maxDate pour filtrer les locations",
-                "operationId": "722041b82f3fe0d4c96ce79a786cd2b7",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "name": "minDate",
-                        "in": "query",
-                        "description": "AAAA-MM-JJ",
-                        "required": false
-                    },
-                    {
-                        "name": "maxDate",
-                        "in": "query",
-                        "description": "AAAA-MM-JJ",
-                        "required": false
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Moyenne calculée",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "average_total_price": {
-                                            "type": "number",
-                                            "format": "float"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Format de date invalide ou minDate > maxDate"
-                    },
-                    "404": {
-                        "description": "Équipement non trouvé"
-                    }
-                }
-            }
-        },
-        "/api/equipment": {
+            },
             "post": {
                 "tags": [
                     "Equipment"
                 ],
                 "summary": "Ajouter un équipement",
-                "description": "Route 1. Seulement si admin. Throttling: 60 requêtes/minute.",
+                "description": "Seulement si admin. Throttling: 60 requêtes/minute.",
                 "operationId": "28c5d8c51afa89bb5b58cafcb6ce6020",
                 "requestBody": {
                     "required": true,
@@ -434,12 +290,61 @@
             }
         },
         "/api/equipment/{id}": {
+            "get": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Récupérer un équipement par ID",
+                "description": "Retourner les détails d'un équipement",
+                "operationId": "546d2e88aec2a0d7af708399e7e20a1e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Équipement trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "daily_price": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "categoryId": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    }
+                }
+            },
             "put": {
                 "tags": [
                     "Equipment"
                 ],
                 "summary": "Mettre à jour un équipement (global)",
-                "description": "Route 2. Mise à jour complète. Seulement si admin. Throttling: 60 requêtes/minute.",
+                "description": "Mise à jour complète. Seulement si admin. Throttling: 60 requêtes/minute.",
                 "operationId": "eeb16faf22a74b63460867278b61644e",
                 "parameters": [
                     {
@@ -511,7 +416,7 @@
                     "Equipment"
                 ],
                 "summary": "Supprimer un équipement",
-                "description": "Route 3. Seulement si admin. Throttling: 60 requêtes/minute.",
+                "description": "Seulement si admin. Throttling: 60 requêtes/minute.",
                 "operationId": "9337ff7b74f071a99d2d2ea81f4617e4",
                 "parameters": [
                     {
@@ -544,13 +449,104 @@
                 ]
             }
         },
+        "/api/equipment/{id}/popularity": {
+            "get": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Récupérer la popularité d'un équipement par ID",
+                "description": "Retourner la popularité d'un équipement",
+                "operationId": "0a782d2d6209a3f189e5281401771529",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Popularité trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "popularity": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Popularité non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/equipment/{id}/average-rental-price": {
+            "get": {
+                "tags": [
+                    "Equipment"
+                ],
+                "summary": "Recevoir la moyenne du prix total de location d'un équipement",
+                "description": "minDate et maxDate pour filtrer les locations",
+                "operationId": "8810156cb2c325e02eedfa2e375ddf0d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "minDate",
+                        "in": "query",
+                        "description": "AAAA-MM-JJ",
+                        "required": false
+                    },
+                    {
+                        "name": "maxDate",
+                        "in": "query",
+                        "description": "AAAA-MM-JJ",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Moyenne calculée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "average_total_price": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Format de date invalide ou minDate > maxDate"
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    }
+                }
+            }
+        },
         "/api/rentals/": {
             "get": {
                 "tags": [
                     "Rental"
                 ],
                 "summary": "Afficher les locations actives de l'utilisateur connecté",
-                "description": "Route 5. Accessible uniquement si connecté. Throttling: 60 requêtes/minute.",
+                "description": "Accessible uniquement si connecté. Throttling: 60 requêtes/minute.",
                 "operationId": "3f3f3443ee3dc8b6e7058cfc3081e756",
                 "responses": {
                     "200": {
@@ -573,7 +569,7 @@
                     "Review"
                 ],
                 "summary": "Créer une critique pour une location",
-                "description": "Route 4. Une seule critique par location pour un utilisateur. Authentification requise. Throttling: 60 requêtes/minute.",
+                "description": "Une seule critique par location pour un utilisateur. Authentification requise. Throttling: 60 requêtes/minute.",
                 "operationId": "154c71f5f72b459d998f5ea451bd4c96",
                 "requestBody": {
                     "required": true,
@@ -787,21 +783,14 @@
                 }
             }
         },
-        "/api/users/{id}/password": {
+        "/api/user/password": {
             "patch": {
                 "tags": [
                     "User"
                 ],
-                "summary": "Mettre à jour le mot de passe d'un utilisateur",
-                "description": "Route 6. Un utilisateur ne peut modifier que son propre mot de passe. Authentification requise. Throttling: 60 requêtes/minute.",
-                "operationId": "4f86d763349c89bca0a239bd4334c7b0",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Mettre à jour son mot de passe",
+                "description": "Un utilisateur ne peut modifier que son propre mot de passe. Authentification requise. Throttling: 60 requêtes/minute.",
+                "operationId": "75f8f589d8162c3ebb0a27049232e804",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -832,9 +821,6 @@
                     },
                     "401": {
                         "description": "Non authentifié"
-                    },
-                    "403": {
-                        "description": "Interdit: modification d'un autre utilisateur"
                     },
                     "422": {
                         "description": "Validation échouée"

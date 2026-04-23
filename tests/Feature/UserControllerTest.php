@@ -22,7 +22,7 @@ class UserControllerTest extends TestCase
         ]);
         Sanctum::actingAs($user);
 
-        $response = $this->patchJson('/api/users/' . $user->id . '/password', [
+        $response = $this->patchJson('/api/user/password', [
             'password' => 'NewPassword456!',
             'password_confirmation' => 'NewPassword456!',
         ]);
@@ -32,7 +32,7 @@ class UserControllerTest extends TestCase
         $this->assertTrue(Hash::check('NewPassword456!', $user->fresh()->password));
     }
 
-    public function test_user_cannot_update_another_users_password(): void
+    public function test_user_update_password_only_affects_authenticated_user(): void
     {
         $this->seed();
 
@@ -42,24 +42,25 @@ class UserControllerTest extends TestCase
         ]);
         $otherUser = User::factory()->create([
             'roleId' => 1,
-            'password' => bcrypt('Password123!'),
+            'password' => bcrypt('OtherPassword123!'),
         ]);
         Sanctum::actingAs($user);
 
-        $response = $this->patchJson('/api/users/' . $otherUser->id . '/password', [
+        $response = $this->patchJson('/api/user/password', [
             'password' => 'NewPassword456!',
             'password_confirmation' => 'NewPassword456!',
         ]);
 
-        $response->assertStatus(403);
-        $response->assertJsonFragment(['message' => 'Forbidden. You can only update your own password.']);
+        $response->assertStatus(200);
+        $this->assertTrue(Hash::check('NewPassword456!', $user->fresh()->password));
+        $this->assertTrue(Hash::check('OtherPassword123!', $otherUser->fresh()->password));
     }
 
     public function test_user_cannot_update_password_without_authentication(): void
     {
         $this->seed();
 
-        $response = $this->patchJson('/api/users/1/password', [
+        $response = $this->patchJson('/api/user/password', [
             'password' => 'NewPassword456!',
             'password_confirmation' => 'NewPassword456!',
         ]);
@@ -77,7 +78,7 @@ class UserControllerTest extends TestCase
         ]);
         Sanctum::actingAs($user);
 
-        $response = $this->patchJson('/api/users/' . $user->id . '/password', [
+        $response = $this->patchJson('/api/user/password', [
             'password' => 'short',
             'password_confirmation' => 'short',
         ]);
@@ -99,7 +100,7 @@ class UserControllerTest extends TestCase
         for ($i = 0; $i < 61; $i++) {
             $password = 'NewPassword' . $i . '456!';
 
-            $response = $this->patchJson('/api/users/' . $user->id . '/password', [
+            $response = $this->patchJson('/api/user/password', [
                 'password' => $password,
                 'password_confirmation' => $password,
             ]);

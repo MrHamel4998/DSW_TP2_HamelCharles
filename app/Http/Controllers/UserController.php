@@ -29,7 +29,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use App\Models\User;
 
 class UserController extends Controller
 {
@@ -140,14 +139,11 @@ class UserController extends Controller
     }
 
     #[OA\Patch(
-        path: '/api/users/{id}/password',
-        summary: 'Mettre à jour le mot de passe d\'un utilisateur',
+        path: '/api/user/password',
+        summary: 'Mettre à jour son mot de passe',
         description: 'Un utilisateur ne peut modifier que son propre mot de passe. Authentification requise. Throttling: 60 requêtes/minute.',
         tags: ['User'],
         security: [['bearerAuth' => []]],
-        parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true)
-        ],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
@@ -161,26 +157,20 @@ class UserController extends Controller
         responses: [
             new OA\Response(response: 200, description: 'Mot de passe mis à jour'),
             new OA\Response(response: 401, description: 'Non authentifié'),
-            new OA\Response(response: 403, description: 'Interdit: modification d\'un autre utilisateur'),
             new OA\Response(response: 422, description: 'Validation échouée')
         ]
     )]
-    public function updatePassword(UpdatePasswordRequest $request, int $id): JsonResponse
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
     {
-        $user = User::findOrFail($id);
         $authUser = $request->user();
 
         if (!$authUser) {
             abort(401, 'Unauthenticated.');
         }
 
-        if ($authUser->getAuthIdentifier() != $user->id) {
-            abort(403, 'Forbidden. You can only update your own password.');
-        }
-
         $data = $request->validated();
 
-        $this->userRepository->updatePassword($id, Hash::make($data['password']));
+        $this->userRepository->updatePassword($authUser->id, Hash::make($data['password']));
 
         return response()->json([
             'message' => 'Password updated successfully.',

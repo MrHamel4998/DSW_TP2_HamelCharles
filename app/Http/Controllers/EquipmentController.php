@@ -35,7 +35,7 @@ class EquipmentController extends Controller
     }
 
     #[OA\Get(
-        path: '/api/equipments',
+        path: '/api/equipment',
         summary: 'Récupérer la liste des équipements',
         description: 'Retourner tous les équipements existants',
         tags: ['Equipment'],
@@ -69,7 +69,7 @@ class EquipmentController extends Controller
     }
 
     #[OA\Get(
-        path: '/api/equipments/{id}',
+        path: '/api/equipment/{id}',
         summary: 'Récupérer un équipement par ID',
         description: 'Retourner les détails d\'un équipement',
         tags: ['Equipment'],
@@ -112,7 +112,7 @@ class EquipmentController extends Controller
 
 
     #[OA\Get(
-        path: '/api/equipments/{id}/popularity',
+        path: '/api/equipment/{id}/popularity',
         summary: 'Récupérer la popularité d\'un équipement par ID',
         description: 'Retourner la popularité d\'un équipement',
         tags: ['Equipment'],
@@ -154,7 +154,7 @@ public function calculatePopularity(int $id)
 }
 
     #[OA\Get(
-        path: '/api/equipments/{id}/average-rental-price',
+        path: '/api/equipment/{id}/average-rental-price',
         summary: 'Recevoir la moyenne du prix total de location d\'un équipement',
         description: 'minDate et maxDate pour filtrer les locations',
         tags: ['Equipment'],
