@@ -16,7 +16,7 @@
  * - Connexion refusée avec identifiants invalides
  * - Déconnexion nécessite authentification
  * - Déconnexion réussie
- * - Inscription bloquée à la 6e tentative (throttling)
+ * - Inscription bloquée à la 6e tentative
  * - Inscription autorisée jusqu’à 5 tentatives
  * - Connexion bloquée à la 6e tentative
  * - Connexion autorisée jusqu’à 5 tentatives (erreur identifiants attendue)

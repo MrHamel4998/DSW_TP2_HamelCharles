@@ -8,7 +8,7 @@
  * - Réduire les erreurs de syntaxe répétitives
  *
  * Limites :
- * - Les annotations doivent ont étés validées manuellement (routes, schémas, sécurité)
+ * - Les annotations ont été validées manuellement (routes, schémas, sécurité)
  * - Le throttling documenté a été ajouté par l'étudiant
  *
  * Responsabilité :
@@ -22,13 +22,17 @@ use OpenApi\Attributes as OA;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Models\User;
+use App\Http\Resources\UserResource;
+use App\Repositories\UserInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function __construct(private UserInterface $userRepository)
+    {
+    }
     
 #[OA\Post(
     path: '/api/signup',
@@ -40,6 +44,7 @@ class AuthController extends Controller
         content: new OA\JsonContent(
             required: ['first_name','last_name','email','login','password','password_confirmation'],
             properties: [
+                new OA\Property(property: 'roleId', type: 'integer', nullable: true, example: 1),
                 new OA\Property(property: 'first_name', type: 'string', example: 'John'),
                 new OA\Property(property: 'last_name', type: 'string', example: 'Doe'),
                 new OA\Property(property: 'email', type: 'string', example: 'john@email.com'),
@@ -59,11 +64,12 @@ class AuthController extends Controller
         $data = $request->validated();
         $data['password'] = bcrypt($data['password']);
 
-        $user = User::create($data);
+        $user = $this->userRepository->create($data);
+        $user->load('role');
 
         return response()->json([
             'message' => 'User created successfully.',
-            'data' => $user,
+            'data' => new UserResource($user),
         ], 201);
     }
 
@@ -99,13 +105,14 @@ class AuthController extends Controller
         }
 
         $user = auth()->user();
+        $user->load('role');
         $user->tokens()->delete();
         $token = $user->createToken('auth_token');
 
         return response()->json([
             'message' => 'Login successful.',
             'data' => [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'token' => $token->plainTextToken,
             ],
         ], 200);
@@ -124,8 +131,11 @@ class AuthController extends Controller
 )]
     public function me(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $user->load('role');
+
         return response()->json([
-            'data' => $request->user(),
+            'data' => new UserResource($user),
         ], 200);
     }
 
@@ -143,6 +153,7 @@ class AuthController extends Controller
     public function refresh(Request $request): JsonResponse
     {
         $user = $request->user();
+        $user->load('role');
         $currentToken = $user->currentAccessToken();
 
         if ($currentToken) {
@@ -156,7 +167,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Token refreshed successfully.',
             'data' => [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'token' => $token,
             ],
         ], 200);
