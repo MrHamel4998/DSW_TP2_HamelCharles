@@ -76,12 +76,23 @@ class UserController extends Controller
                     ]
                 )
             ),
+            new OA\Response(response: 401, description: 'Non authentifié'),
+            new OA\Response(response: 403, description: 'Accès interdit'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé')
         ]
     )]
     public function update(StoreUserRequest $request, int $id)
     {
         try {
+            $authUser = $request->user();
+
+            if (!$authUser) {
+                abort(401, 'Unauthenticated.');
+            }
+
+            if ((int) $authUser->id !== $id) {
+                abort(403, 'Forbidden.');
+            }
             $validated = $request->validated();
             $user = $this->userRepository->update($id, $validated);
 
